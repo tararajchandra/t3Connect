@@ -3,9 +3,9 @@ export default function Home() {
     <main>
       {/* Hero Section */}
       <section className="hero">
-        <h1 className="hero-title">Lightning Fast Remote Desktop</h1>
+        <h1 className="hero-title">Lightning Fast P2P Remote Desktop</h1>
         <p className="hero-subtitle">
-          Experience ultra-low latency screen sharing and remote control for maximum performance and security.
+          Experience ultra-low latency screen sharing and seamless remote support for your clients and teams. The ultimate peer-to-peer remote access software.
         </p>
         <a href="/download/t3connect-setup.msi" className="download-btn">
           Download for Windows
