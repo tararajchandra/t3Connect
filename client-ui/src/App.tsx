@@ -61,7 +61,7 @@ function App() {
     if (!sessionId) return;
     setConnecting(true);
 
-    const ws = new WebSocket(`ws://192.99.167.217:8080/ws/${sessionId}`);
+    const ws = new WebSocket(`ws://qkwcwksoc88cckoks84o44ks.192.99.167.217.sslip.io/ws/${sessionId}`);
     wsRef.current = ws;
 
     ws.onopen = async () => {

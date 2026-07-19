@@ -25,7 +25,7 @@ async fn start_host(state: State<'_, AppState>) -> Result<u32, String> {
     };
 
     // Start host signaling connection via VPS
-    let ws_url = format!("ws://192.99.167.217:8080/ws/{}", session_id);
+    let ws_url = format!("ws://qkwcwksoc88cckoks84o44ks.192.99.167.217.sslip.io/ws/{}", session_id);
     tauri::async_runtime::spawn(async move {
         if let Err(e) = signaling::start_signaling(ws_url).await {
             println!("Host engine error: {}", e);
