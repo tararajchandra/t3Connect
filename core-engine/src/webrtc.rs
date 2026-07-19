@@ -158,12 +158,27 @@ pub async fn init_webrtc(tx: mpsc::Sender<String>) -> Result<WebRTCContext, Box<
     // Spawn task to send real desktop frames
     let video_task = tokio::spawn(async move {
         println!("Initializing DXGI Desktop Capturer...");
-        let mut capturer_res = crate::input::ScreenCapturer::new();
-        if let Err(e) = capturer_res {
-            println!("Failed to initialize DXGI Capturer: {}", e);
-            return;
-        }
-        let mut capturer = capturer_res.unwrap();
+        let mut retry_count = 0;
+        let mut capturer = loop {
+            let capturer_opt = match crate::input::ScreenCapturer::new() {
+                Ok(c) => Some(c),
+                Err(e) => {
+                    println!("Failed to initialize DXGI Capturer: {}. Retrying...", e);
+                    None
+                }
+            };
+            
+            if let Some(c) = capturer_opt {
+                break c;
+            }
+            
+            retry_count += 1;
+            if retry_count > 10 {
+                println!("Failed to initialize DXGI Capturer after 10 retries.");
+                return;
+            }
+            tokio::time::sleep(tokio::time::Duration::from_millis(500)).await;
+        };
         let width = capturer.width;
         let height = capturer.height;
         let fps = 30;
@@ -187,7 +202,20 @@ pub async fn init_webrtc(tx: mpsc::Sender<String>) -> Result<WebRTCContext, Box<
                 Ok(data) => data,
                 Err(err_msg) => {
                     println!("DXGI capture error: {}", err_msg);
-                    sleep(Duration::from_millis(33)).await;
+                    
+                    // Attempt to re-initialize capturer on error (e.g. session disconnected or UAC)
+                    println!("Re-initializing DXGI capturer...");
+                    match crate::input::ScreenCapturer::new() {
+                        Ok(new_capturer) => {
+                            capturer = new_capturer;
+                            println!("Re-initialized DXGI capturer successfully.");
+                        }
+                        Err(e) => {
+                            println!("Failed to re-initialize DXGI capturer: {}", e);
+                        }
+                    }
+                    
+                    sleep(Duration::from_millis(200)).await;
                     continue;
                 }
             };
