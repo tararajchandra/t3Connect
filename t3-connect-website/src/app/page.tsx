@@ -3,11 +3,24 @@ export default function Home() {
     <main>
       {/* ── HERO ── */}
       <section className="hero">
-        <img
-          src="/logo.png"
-          alt="T3 Solutions"
-          style={{ height: '90px', width: 'auto', marginBottom: '28px', filter: 'drop-shadow(0 0 24px rgba(255,107,0,0.4))' }}
-        />
+        <div style={{
+          width: '120px',
+          height: '120px',
+          borderRadius: '50%',
+          border: '2px solid var(--saffron)',
+          boxShadow: '0 0 32px rgba(255,107,0,0.5), 0 0 80px rgba(255,107,0,0.2)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          margin: '0 auto 28px',
+          background: 'radial-gradient(circle, rgba(255,107,0,0.08), transparent 70%)',
+        }}>
+          <img
+            src="/logo.png"
+            alt="T3 Solutions"
+            style={{ height: '80px', width: 'auto' }}
+          />
+        </div>
 
         <div className="hero-badge">
           <span className="hero-badge-dot" />
