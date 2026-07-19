@@ -8,6 +8,7 @@ use windows::{
 
 pub struct HardwareEncoder {
     transform: IMFTransform,
+    duration: i64,
 }
 
 unsafe impl Send for HardwareEncoder {}
@@ -83,7 +84,9 @@ impl HardwareEncoder {
 
             println!("Successfully configured H.264 Hardware Encoder MFT!");
 
-            Ok(Self { transform })
+            let duration = 10_000_000 / (fps as i64);
+
+            Ok(Self { transform, duration })
         }
     }
 
@@ -105,7 +108,7 @@ impl HardwareEncoder {
             
             sample.AddBuffer(&buffer)?;
             sample.SetSampleTime(timestamp)?;
-            sample.SetSampleDuration(330000)?; // 30fps
+            sample.SetSampleDuration(self.duration)?;
 
             let mut all_nalus = Vec::new();
 

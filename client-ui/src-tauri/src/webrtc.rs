@@ -166,7 +166,7 @@ pub async fn init_webrtc(tx: mpsc::Sender<String>) -> Result<WebRTCContext, Box<
         let mut capturer = capturer_res.unwrap();
         let width = capturer.width;
         let height = capturer.height;
-        let fps = 15;
+        let fps = 30;
         
         println!("Started sending desktop frames ({}x{}) via Media Foundation H.264 Encoder...", width, height);
         
@@ -206,7 +206,7 @@ pub async fn init_webrtc(tx: mpsc::Sender<String>) -> Result<WebRTCContext, Box<
                 if !h264_nalus.is_empty() {
                     let sample = Sample {
                         data: bytes::Bytes::from(h264_nalus),
-                        duration: Duration::from_millis(66),
+                        duration: Duration::from_millis(33),
                         ..Default::default()
                     };
                     if let Err(e) = video_track.write_sample(&sample).await {
@@ -218,12 +218,12 @@ pub async fn init_webrtc(tx: mpsc::Sender<String>) -> Result<WebRTCContext, Box<
                 println!("Encoding failed for frame: {}", e);
             }
             
-            timestamp += 660000;
+            timestamp += 330000;
             
-            // Pace the frame loop to roughly 15 FPS
+            // Pace the frame loop to roughly 30 FPS
             let elapsed = start.elapsed();
-            if elapsed < Duration::from_millis(66) {
-                sleep(Duration::from_millis(66) - elapsed).await;
+            if elapsed < Duration::from_millis(33) {
+                sleep(Duration::from_millis(33) - elapsed).await;
             }
         }
     });
