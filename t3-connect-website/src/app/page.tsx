@@ -13,12 +13,13 @@ export default function Home() {
           alignItems: 'center',
           justifyContent: 'center',
           margin: '0 auto 28px',
-          background: 'radial-gradient(circle, rgba(255,107,0,0.08), transparent 70%)',
+          background: 'transparent',
+          overflow: 'hidden',
         }}>
           <img
             src="/logo.png"
             alt="T3 Solutions"
-            style={{ height: '80px', width: 'auto' }}
+            style={{ height: '100%', width: '100%', objectFit: 'cover' }}
           />
         </div>
 
