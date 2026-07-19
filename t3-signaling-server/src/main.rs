@@ -58,7 +58,7 @@ async fn handle_socket(mut socket: WebSocket, session_id: String, state: AppStat
             msg = socket.recv() => {
                 match msg {
                     Some(Ok(Message::Text(text))) => {
-                        let _ = tx.send(text.into());
+                        let _ = tx.send(text.to_string());
                     }
                     Some(Ok(Message::Close(_))) | None => break,
                     _ => {}
