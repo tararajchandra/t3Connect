@@ -1,0 +1,17 @@
+[package]
+name = "core-engine"
+version = "0.1.0"
+edition = "2024"
+default-run = "core-engine"
+
+[dependencies]
+bytes = "1.12.1"
+enigo = "0.6.1"
+futures-util = "0.3.33"
+rand = "0.10.2"
+serde = { version = "1.0.228", features = ["derive"] }
+serde_json = "1.0.150"
+tokio = { version = "1.53.0", features = ["full"] }
+tokio-tungstenite = "0.30.0"
+webrtc = "0.17.1"
+windows = { version = "0.62.2", features = ["Win32_Graphics_Dxgi", "Win32_Graphics_Direct3D11", "Win32_Foundation", "Win32_UI_WindowsAndMessaging", "Win32_System_Com", "Win32_Graphics_Direct3D", "Win32_Media_MediaFoundation", "Win32_Media_KernelStreaming", "Win32_Media", "Win32_Graphics_Dxgi_Common", "Win32_Graphics_Gdi"] }

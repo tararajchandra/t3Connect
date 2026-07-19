@@ -1,0 +1,7 @@
+[workspace]
+members = [
+    "core-engine",
+    "signaling-server",
+    "client-ui/src-tauri"
+, "t3-signaling-server"]
+resolver = "2"
