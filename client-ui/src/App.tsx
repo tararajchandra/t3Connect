@@ -33,6 +33,31 @@ function App() {
     };
   }, [connected, role]);
 
+  // Global keyboard capture
+  useEffect(() => {
+    if (!connected || role !== "client") return;
+
+    const handleGlobalKeyDown = (e: KeyboardEvent) => {
+      if (!dcRef.current || dcRef.current.readyState !== "open") return;
+      e.preventDefault();
+      dcRef.current.send(JSON.stringify({ type: "keydown", key: e.key }));
+    };
+
+    const handleGlobalKeyUp = (e: KeyboardEvent) => {
+      if (!dcRef.current || dcRef.current.readyState !== "open") return;
+      e.preventDefault();
+      dcRef.current.send(JSON.stringify({ type: "keyup", key: e.key }));
+    };
+
+    window.addEventListener('keydown', handleGlobalKeyDown, { capture: true });
+    window.addEventListener('keyup', handleGlobalKeyUp, { capture: true });
+
+    return () => {
+      window.removeEventListener('keydown', handleGlobalKeyDown, { capture: true });
+      window.removeEventListener('keyup', handleGlobalKeyUp, { capture: true });
+    };
+  }, [connected, role]);
+
   const disconnect = () => {
     if (wsRef.current) wsRef.current.close();
     if (pcRef.current) pcRef.current.close();
@@ -177,18 +202,6 @@ function App() {
     dcRef.current.send(JSON.stringify({ type: "mouseup", button }));
   };
 
-  const handleKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
-    if (!dcRef.current || dcRef.current.readyState !== "open") return;
-    e.preventDefault();
-    dcRef.current.send(JSON.stringify({ type: "keydown", key: e.key }));
-  };
-
-  const handleKeyUp = (e: React.KeyboardEvent<HTMLDivElement>) => {
-    if (!dcRef.current || dcRef.current.readyState !== "open") return;
-    e.preventDefault();
-    dcRef.current.send(JSON.stringify({ type: "keyup", key: e.key }));
-  };
-
   const handleContextMenu = (e: React.MouseEvent<HTMLDivElement>) => {
     e.preventDefault();
   };
@@ -268,8 +281,6 @@ function App() {
             onMouseMove={handleMouseMove}
             onMouseDown={handleMouseDown}
             onMouseUp={handleMouseUp}
-            onKeyDown={handleKeyDown}
-            onKeyUp={handleKeyUp}
             onContextMenu={handleContextMenu}
           >
             <video 
