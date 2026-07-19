@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import { invoke } from "@tauri-apps/api/core";
+import { open } from "@tauri-apps/plugin-dialog";
 import "./App.css";
 import logo from './assets/logo.png';
 
@@ -14,6 +15,14 @@ function App() {
   const wsRef = useRef<WebSocket | null>(null);
   const pcRef = useRef<RTCPeerConnection | null>(null);
   const dcRef = useRef<RTCDataChannel | null>(null);
+
+  // File Transfer State
+  const fileDcRef = useRef<RTCDataChannel | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [transferProgress, setTransferProgress] = useState(0);
+  const [isTransferring, setIsTransferring] = useState(false);
+  const incomingFileMeta = useRef<{name: string, size: number, mimeType: string} | null>(null);
+  const incomingChunks = useRef<ArrayBuffer[]>([]);
 
   // Auto-hide toolbar when mouse doesn't move
   useEffect(() => {
@@ -65,6 +74,7 @@ function App() {
     setConnecting(false);
     setSessionId("");
     setRole("none");
+    setIsTransferring(false);
   };
 
   const startHost = async () => {
@@ -80,6 +90,88 @@ function App() {
     } finally {
       setConnecting(false);
     }
+  };
+
+  const handleFileMessage = (event: MessageEvent) => {
+    if (typeof event.data === "string") {
+      try {
+        const msg = JSON.parse(event.data);
+        if (msg.type === "file-start") {
+          incomingFileMeta.current = msg;
+          incomingChunks.current = [];
+          setTransferProgress(0);
+          setIsTransferring(true);
+        } else if (msg.type === "file-end") {
+          if (incomingFileMeta.current && incomingChunks.current.length > 0) {
+            const blob = new Blob(incomingChunks.current, { type: incomingFileMeta.current.mimeType || 'application/octet-stream' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = incomingFileMeta.current.name || 'downloaded_file';
+            a.click();
+            URL.revokeObjectURL(url);
+          }
+          setIsTransferring(false);
+          incomingFileMeta.current = null;
+          incomingChunks.current = [];
+        }
+      } catch (e) {
+        console.error("Invalid text message on file channel", e);
+      }
+    } else if (event.data instanceof ArrayBuffer) {
+      incomingChunks.current.push(event.data);
+      if (incomingFileMeta.current && incomingFileMeta.current.size) {
+        const currentSize = incomingChunks.current.reduce((acc, val) => acc + val.byteLength, 0);
+        setTransferProgress(Math.min(100, Math.round((currentSize / incomingFileMeta.current.size) * 100)));
+      }
+    }
+  };
+
+  const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !fileDcRef.current || fileDcRef.current.readyState !== "open") return;
+    
+    setIsTransferring(true);
+    setTransferProgress(0);
+    
+    fileDcRef.current.send(JSON.stringify({
+      type: "file-start",
+      name: file.name,
+      size: file.size,
+      mimeType: file.type
+    }));
+    
+    const chunkSize = 65536; // 64KB
+    let offset = 0;
+    
+    const readSlice = (o: number) => {
+      const slice = file.slice(offset, o + chunkSize);
+      return slice.arrayBuffer();
+    };
+    
+    while (offset < file.size) {
+      const buffer = await readSlice(offset);
+      
+      if (fileDcRef.current.bufferedAmount > fileDcRef.current.bufferedAmountLowThreshold) {
+        await new Promise(r => {
+          if (!fileDcRef.current) return r(0);
+          const onBufferedAmountLow = () => {
+            if (fileDcRef.current) fileDcRef.current.removeEventListener('bufferedamountlow', onBufferedAmountLow);
+            r(0);
+          };
+          fileDcRef.current.addEventListener('bufferedamountlow', onBufferedAmountLow);
+        });
+      }
+      
+      fileDcRef.current.send(buffer);
+      offset += buffer.byteLength;
+      setTransferProgress(Math.min(100, Math.round((offset / file.size) * 100)));
+    }
+    
+    fileDcRef.current.send(JSON.stringify({ type: "file-end" }));
+    setIsTransferring(false);
+    
+    if (fileInputRef.current) fileInputRef.current.value = "";
   };
 
   const connectAsClient = async () => {
@@ -101,6 +193,13 @@ function App() {
       const dc = pc.createDataChannel("input-channel");
       dcRef.current = dc;
       dc.onopen = () => console.log("Data channel opened");
+
+      // Data Channel for files
+      const fileDc = pc.createDataChannel("file-transfer");
+      fileDc.binaryType = "arraybuffer";
+      fileDcRef.current = fileDc;
+      fileDc.onopen = () => console.log("File Data channel opened");
+      fileDc.onmessage = handleFileMessage;
       
       // Force H264 for the video transceiver
       const tc = pc.addTransceiver("video", { direction: "recvonly" });
@@ -238,8 +337,23 @@ function App() {
             <p style={{ color: 'var(--text-secondary)', fontSize: '0.9em' }}>
               Share this Session ID and your IP address with the viewer.
             </p>
+
+            <button className="connect-btn secondary-btn" style={{ marginTop: '10px' }} onClick={async () => {
+              try {
+                const selected = await open({
+                  multiple: false,
+                });
+                if (selected) {
+                  await invoke('send_file_to_client', { path: selected });
+                }
+              } catch (e) {
+                console.error("Failed to select file:", e);
+              }
+            }}>
+              Send File to Client
+            </button>
             
-            <button className="disconnect-btn" style={{ marginTop: '20px' }} onClick={disconnect}>
+            <button className="disconnect-btn" style={{ marginTop: '10px' }} onClick={disconnect}>
               Stop Sharing
             </button>
           </div>
@@ -292,14 +406,27 @@ function App() {
             />
           </div>
           
-          <div className={`glass-panel floating-toolbar ${showToolbar ? '' : 'toolbar-fade-out'}`}>
-            <div className="status-indicator">
+          <div className={`glass-panel floating-toolbar ${showToolbar ? '' : 'toolbar-fade-out'}`} style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+            <div className="status-indicator" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
               <div className="status-dot"></div>
               Connected ({sessionId})
             </div>
-            <button className="disconnect-btn" onClick={disconnect}>
-              Disconnect
-            </button>
+            
+            <div style={{ display: 'flex', gap: '10px', width: '100%' }}>
+              <input type="file" ref={fileInputRef} style={{ display: 'none' }} onChange={handleFileSelect} />
+              <button className="connect-btn secondary-btn" style={{ flex: 1, padding: '8px' }} onClick={() => fileInputRef.current?.click()} disabled={isTransferring}>
+                Send File
+              </button>
+              <button className="disconnect-btn" style={{ flex: 1, padding: '8px' }} onClick={disconnect}>
+                Disconnect
+              </button>
+            </div>
+            
+            {isTransferring && (
+              <div style={{ width: '100%', backgroundColor: 'rgba(255,255,255,0.1)', borderRadius: '4px', marginTop: '5px' }}>
+                <div style={{ height: '4px', backgroundColor: 'var(--primary)', width: `${transferProgress}%`, transition: 'width 0.2s' }}></div>
+              </div>
+            )}
           </div>
         </main>
       )}

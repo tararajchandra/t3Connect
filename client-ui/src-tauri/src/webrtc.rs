@@ -1,20 +1,19 @@
+use enigo::{Button, Coordinate, Direction, Enigo, Key, Keyboard, Mouse};
+use serde_json::Value;
 use std::sync::Arc;
 use tokio::sync::mpsc;
 use tokio::time::{sleep, Duration};
 use webrtc::{
-    api::{APIBuilder, media_engine::MediaEngine},
+    api::{media_engine::MediaEngine, APIBuilder},
     data_channel::data_channel_message::DataChannelMessage,
+    ice_transport::{ice_candidate::RTCIceCandidateInit, ice_server::RTCIceServer},
+    media::Sample,
     peer_connection::{
-        configuration::RTCConfiguration,
-        sdp::session_description::RTCSessionDescription,
+        configuration::RTCConfiguration, sdp::session_description::RTCSessionDescription,
         RTCPeerConnection,
     },
     track::track_local::{track_local_static_sample::TrackLocalStaticSample, TrackLocal},
-    ice_transport::{ice_server::RTCIceServer, ice_candidate::RTCIceCandidateInit},
-    media::Sample,
 };
-use serde_json::Value;
-use enigo::{Enigo, Mouse, Keyboard, Coordinate, Button, Direction, Key};
 
 fn map_key(k: &str) -> Key {
     match k {
@@ -49,7 +48,10 @@ pub struct WebRTCContext {
     pub video_task: tokio::task::JoinHandle<()>,
 }
 
-pub async fn init_webrtc(tx: mpsc::Sender<String>) -> Result<WebRTCContext, Box<dyn std::error::Error + Send + Sync>> {
+pub async fn init_webrtc(
+    tx: mpsc::Sender<String>,
+    global_file_dc: Arc<tokio::sync::Mutex<Option<Arc<::webrtc::data_channel::RTCDataChannel>>>>
+) -> Result<WebRTCContext, Box<dyn std::error::Error + Send + Sync>> {
     let mut m = MediaEngine::default();
     m.register_default_codecs()?;
     let api = APIBuilder::new().with_media_engine(m).build();
@@ -85,63 +87,107 @@ pub async fn init_webrtc(tx: mpsc::Sender<String>) -> Result<WebRTCContext, Box<
 
     // Data Channel (input)
     let enigo_for_dc = enigo_mutex.clone();
+    let global_file_dc = global_file_dc.clone();
     pc.on_data_channel(Box::new(move |d| {
         println!("New DataChannel {} {}", d.label(), d.id());
         
+        let label = d.label().to_owned();
         let d2 = Arc::clone(&d);
         let enigo_for_msg = enigo_for_dc.clone();
-        
+        let global_file_dc_inner = global_file_dc.clone();
+
         Box::pin(async move {
-            d2.on_message(Box::new(move |msg: DataChannelMessage| {
-                let msg_str = String::from_utf8(msg.data.to_vec()).unwrap_or_default();
-                let enigo_mutex = enigo_for_msg.clone();
+            if label == "file-transfer" {
+                println!("New File Transfer DataChannel opened!");
+                *global_file_dc_inner.lock().await = Some(d2.clone());
                 
-                Box::pin(async move {
-                    if let Ok(json) = serde_json::from_str::<Value>(&msg_str) {
-                        let mut enigo = enigo_mutex.lock().await;
-                        
-                        match json["type"].as_str().unwrap_or("") {
-                            "mousemove" => {
-                                if let (Some(nx), Some(ny)) = (json["x"].as_f64(), json["y"].as_f64()) {
-                                    let (w, h) = enigo.main_display().unwrap_or((1920, 1080));
-                                    let abs_x = (nx * w as f64) as i32;
-                                    let abs_y = (ny * h as f64) as i32;
-                                    let _ = enigo.move_mouse(abs_x, abs_y, Coordinate::Abs);
+                let active_file = Arc::new(tokio::sync::Mutex::new(None::<std::fs::File>));
+                d2.on_message(Box::new(move |msg: DataChannelMessage| {
+                    let active_file = active_file.clone();
+                    let msg_data = msg.data.to_vec();
+                    Box::pin(async move {
+                        if msg.is_string {
+                            let msg_str = String::from_utf8(msg_data).unwrap_or_default();
+                            if let Ok(json) = serde_json::from_str::<Value>(&msg_str) {
+                                if json["type"] == "file-start" {
+                                    if let Some(name) = json["name"].as_str() {
+                                        if let Some(mut downloads_path) = dirs::download_dir() {
+                                            downloads_path.push(name);
+                                            println!("Receiving file to: {:?}", downloads_path);
+                                            if let Ok(file) = std::fs::File::create(downloads_path) {
+                                                *active_file.lock().await = Some(file);
+                                            }
+                                        }
+                                    }
+                                } else if json["type"] == "file-end" {
+                                    println!("File transfer completed!");
+                                    *active_file.lock().await = None; // close file
                                 }
                             }
-                            "mousedown" => {
-                                let btn = match json["button"].as_str().unwrap_or("left") {
-                                    "right" => Button::Right,
-                                    "middle" => Button::Middle,
-                                    _ => Button::Left,
-                                };
-                                let _ = enigo.button(btn, Direction::Press);
+                        } else {
+                            // Binary chunk
+                            if let Some(file) = active_file.lock().await.as_mut() {
+                                use std::io::Write;
+                                let _ = file.write_all(&msg_data);
                             }
-                            "mouseup" => {
-                                let btn = match json["button"].as_str().unwrap_or("left") {
-                                    "right" => Button::Right,
-                                    "middle" => Button::Middle,
-                                    _ => Button::Left,
-                                };
-                                let _ = enigo.button(btn, Direction::Release);
-                            }
-                            "keydown" => {
-                                if let Some(k) = json["key"].as_str() {
-                                    let _ = enigo.key(map_key(k), Direction::Press);
-                                }
-                            }
-                            "keyup" => {
-                                if let Some(k) = json["key"].as_str() {
-                                    let _ = enigo.key(map_key(k), Direction::Release);
-                                }
-                            }
-                            _ => {}
                         }
-                    }
-                })
-            }));
+                    })
+                }));
+            } else {
+                d2.on_message(Box::new(move |msg: DataChannelMessage| {
+                    let msg_str = String::from_utf8(msg.data.to_vec()).unwrap_or_default();
+                    let enigo_mutex = enigo_for_msg.clone();
+
+                    Box::pin(async move {
+                        if let Ok(json) = serde_json::from_str::<Value>(&msg_str) {
+                            let mut enigo = enigo_mutex.lock().await;
+
+                            match json["type"].as_str().unwrap_or("") {
+                                "mousemove" => {
+                                    if let (Some(nx), Some(ny)) =
+                                        (json["x"].as_f64(), json["y"].as_f64())
+                                    {
+                                        let (w, h) = enigo.main_display().unwrap_or((1920, 1080));
+                                        let abs_x = (nx * w as f64) as i32;
+                                        let abs_y = (ny * h as f64) as i32;
+                                        let _ = enigo.move_mouse(abs_x, abs_y, Coordinate::Abs);
+                                    }
+                                }
+                                "mousedown" => {
+                                    let btn = match json["button"].as_str().unwrap_or("left") {
+                                        "right" => Button::Right,
+                                        "middle" => Button::Middle,
+                                        _ => Button::Left,
+                                    };
+                                    let _ = enigo.button(btn, Direction::Press);
+                                }
+                                "mouseup" => {
+                                    let btn = match json["button"].as_str().unwrap_or("left") {
+                                        "right" => Button::Right,
+                                        "middle" => Button::Middle,
+                                        _ => Button::Left,
+                                    };
+                                    let _ = enigo.button(btn, Direction::Release);
+                                }
+                                "keydown" => {
+                                    if let Some(k) = json["key"].as_str() {
+                                        let _ = enigo.key(map_key(k), Direction::Press);
+                                    }
+                                }
+                                "keyup" => {
+                                    if let Some(k) = json["key"].as_str() {
+                                        let _ = enigo.key(map_key(k), Direction::Release);
+                                    }
+                                }
+                                _ => {}
+                            }
+                        }
+                    })
+                }));
+            }
         })
     }));
+
 
     // Dummy Video Track
     let video_track = Arc::new(TrackLocalStaticSample::new(
@@ -153,7 +199,8 @@ pub async fn init_webrtc(tx: mpsc::Sender<String>) -> Result<WebRTCContext, Box<
         "webrtc-rs".to_owned(),
     ));
 
-    pc.add_track(Arc::clone(&video_track) as Arc<dyn TrackLocal + Send + Sync>).await?;
+    pc.add_track(Arc::clone(&video_track) as Arc<dyn TrackLocal + Send + Sync>)
+        .await?;
 
     // Spawn task to send real desktop frames
     let video_task = tokio::spawn(async move {
@@ -167,9 +214,12 @@ pub async fn init_webrtc(tx: mpsc::Sender<String>) -> Result<WebRTCContext, Box<
         let width = capturer.width;
         let height = capturer.height;
         let fps = 30;
-        
-        println!("Started sending desktop frames ({}x{}) via Media Foundation H.264 Encoder...", width, height);
-        
+
+        println!(
+            "Started sending desktop frames ({}x{}) via Media Foundation H.264 Encoder...",
+            width, height
+        );
+
         // Initialize Encoder (Lower bitrate to 2.5 Mbps for lower latency)
         let encoder_res = crate::encoder::HardwareEncoder::new(width, height, fps, 2_500_000);
         if let Err(e) = encoder_res {
@@ -177,9 +227,9 @@ pub async fn init_webrtc(tx: mpsc::Sender<String>) -> Result<WebRTCContext, Box<
             return;
         }
         let encoder = encoder_res.unwrap();
-        
+
         let mut timestamp: i64 = 0;
-        
+
         loop {
             let start = tokio::time::Instant::now();
 
@@ -191,16 +241,16 @@ pub async fn init_webrtc(tx: mpsc::Sender<String>) -> Result<WebRTCContext, Box<
                     continue;
                 }
             };
-            
+
             if bgra.is_empty() {
                 // Timeout means no screen update (DXGI_ERROR_WAIT_TIMEOUT). We can skip encoding.
                 sleep(Duration::from_millis(5)).await;
                 continue;
             }
-            
+
             // Convert to NV12
             let nv12 = crate::color::bgra_to_nv12(&bgra, width as usize, height as usize);
-            
+
             // Encode to H.264 NALUs
             if let Ok(h264_nalus) = encoder.encode_nv12(&nv12, timestamp) {
                 if !h264_nalus.is_empty() {
@@ -217,9 +267,9 @@ pub async fn init_webrtc(tx: mpsc::Sender<String>) -> Result<WebRTCContext, Box<
             } else if let Err(e) = encoder.encode_nv12(&nv12, timestamp) {
                 println!("Encoding failed for frame: {}", e);
             }
-            
+
             timestamp += 330000;
-            
+
             // Pace the frame loop to roughly 30 FPS
             let elapsed = start.elapsed();
             if elapsed < Duration::from_millis(33) {
@@ -234,10 +284,10 @@ pub async fn init_webrtc(tx: mpsc::Sender<String>) -> Result<WebRTCContext, Box<
 pub async fn handle_offer(ctx: &WebRTCContext, sdp: &str) {
     let desc = RTCSessionDescription::offer(sdp.to_owned()).unwrap();
     ctx.pc.set_remote_description(desc).await.unwrap();
-    
+
     let answer = ctx.pc.create_answer(None).await.unwrap();
     ctx.pc.set_local_description(answer.clone()).await.unwrap();
-    
+
     let payload = serde_json::json!({
         "type": "answer",
         "sdp": answer.sdp

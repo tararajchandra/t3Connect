@@ -1,9 +1,6 @@
 use std::mem::ManuallyDrop;
 use windows::{
-    core::*,
-    Win32::Media::MediaFoundation::*,
-    Win32::Media::DirectShow::*,
-    Win32::System::Com::*,
+    core::*, Win32::Media::DirectShow::*, Win32::Media::MediaFoundation::*, Win32::System::Com::*,
 };
 
 pub struct HardwareEncoder {
@@ -15,7 +12,12 @@ unsafe impl Send for HardwareEncoder {}
 unsafe impl Sync for HardwareEncoder {}
 
 impl HardwareEncoder {
-    pub fn new(width: u32, height: u32, fps: u32, bitrate: u32) -> std::result::Result<Self, Box<dyn std::error::Error + Send + Sync>> {
+    pub fn new(
+        width: u32,
+        height: u32,
+        fps: u32,
+        bitrate: u32,
+    ) -> std::result::Result<Self, Box<dyn std::error::Error + Send + Sync>> {
         unsafe {
             // Initialize COM & Media Foundation
             let _ = CoInitializeEx(None, COINIT_MULTITHREADED);
@@ -24,7 +26,7 @@ impl HardwareEncoder {
             // 1. Find H264 Encoder MFT using MFTEnumEx
             let mut p_attributes: *mut Option<IMFActivate> = std::ptr::null_mut();
             let mut num_attributes = 0;
-            
+
             let in_info = MFT_REGISTER_TYPE_INFO {
                 guidMajorType: MFMediaType_Video,
                 guidSubtype: MFVideoFormat_NV12,
@@ -34,8 +36,8 @@ impl HardwareEncoder {
                 guidSubtype: MFVideoFormat_H264,
             };
 
-            // Note: Hardware encoders (NVENC/QuickSync) are usually Asynchronous MFTs which 
-            // require a complex event loop. For this prototype, we will force a Synchronous MFT 
+            // Note: Hardware encoders (NVENC/QuickSync) are usually Asynchronous MFTs which
+            // require a complex event loop. For this prototype, we will force a Synchronous MFT
             // (Software Encoder) to prove the end-to-end pipeline works!
             let hr = MFTEnumEx(
                 MFT_CATEGORY_VIDEO_ENCODER,
@@ -56,9 +58,9 @@ impl HardwareEncoder {
             let activates = std::slice::from_raw_parts(p_attributes, num_attributes as usize);
             let activate = activates[0].as_ref().unwrap();
             let transform: IMFTransform = activate.ActivateObject()?;
-            
+
             CoTaskMemFree(Some(p_attributes as *const _));
-            
+
             // Helper to pack size/ratio
             let pack_u64 = |high: u32, low: u32| ((high as u64) << 32) | (low as u64);
 
@@ -86,26 +88,33 @@ impl HardwareEncoder {
 
             let duration = 10_000_000 / (fps as i64);
 
-            Ok(Self { transform, duration })
+            Ok(Self {
+                transform,
+                duration,
+            })
         }
     }
 
-    pub fn encode_nv12(&self, nv12_data: &[u8], timestamp: i64) -> std::result::Result<Vec<u8>, Box<dyn std::error::Error + Send + Sync>> {
+    pub fn encode_nv12(
+        &self,
+        nv12_data: &[u8],
+        timestamp: i64,
+    ) -> std::result::Result<Vec<u8>, Box<dyn std::error::Error + Send + Sync>> {
         unsafe {
             // Create Input Sample
             let sample = MFCreateSample()?;
             let buffer = MFCreateMemoryBuffer(nv12_data.len() as u32)?;
-            
+
             let mut ptr: *mut u8 = std::ptr::null_mut();
             let mut max_len = 0;
             let mut current_len = 0;
             buffer.Lock(&mut ptr, Some(&mut max_len), Some(&mut current_len))?;
-            
+
             std::ptr::copy_nonoverlapping(nv12_data.as_ptr(), ptr, nv12_data.len());
-            
+
             buffer.Unlock()?;
             buffer.SetCurrentLength(nv12_data.len() as u32)?;
-            
+
             sample.AddBuffer(&buffer)?;
             sample.SetSampleTime(timestamp)?;
             sample.SetSampleDuration(self.duration)?;
@@ -118,7 +127,8 @@ impl HardwareEncoder {
             // 2. Feed new input
             let hr_input = self.transform.ProcessInput(0, &sample, 0);
             if let Err(e) = hr_input {
-                if e.code() != windows::core::HRESULT(0xC00D36B5u32 as i32) { // MF_E_NOTACCEPTING is 0xC00D36B5
+                if e.code() != windows::core::HRESULT(0xC00D36B5u32 as i32) {
+                    // MF_E_NOTACCEPTING is 0xC00D36B5
                     return Err(e.into());
                 }
             }
@@ -132,7 +142,11 @@ impl HardwareEncoder {
 
     unsafe fn drain_output(transform: &IMFTransform, all_nalus: &mut Vec<u8>) -> Result<()> {
         let info = transform.GetOutputStreamInfo(0)?;
-        let out_size = if info.cbSize > 0 { info.cbSize } else { 1024 * 1024 };
+        let out_size = if info.cbSize > 0 {
+            info.cbSize
+        } else {
+            1024 * 1024
+        };
 
         loop {
             let out_sample = MFCreateSample()?;
@@ -145,22 +159,24 @@ impl HardwareEncoder {
                 dwStatus: 0,
                 pEvents: ManuallyDrop::new(None),
             };
-            
+
             let mut status = 0;
             let mut buffers = [output_data_buffer];
             let process_res = transform.ProcessOutput(0, &mut buffers, &mut status);
-            
+
             // PREVENT MEMORY LEAK: Take the COM objects back out of ManuallyDrop so they drop correctly
             let _ = ManuallyDrop::take(&mut buffers[0].pSample);
             let _ = ManuallyDrop::take(&mut buffers[0].pEvents);
-            
+
             if let Err(e) = process_res {
-                if e.code() == windows::core::HRESULT(0xC00D36B6u32 as i32) { // MF_E_TRANSFORM_STREAM_CHANGE
+                if e.code() == windows::core::HRESULT(0xC00D36B6u32 as i32) {
+                    // MF_E_TRANSFORM_STREAM_CHANGE
                     println!("MFT requested stream change! Ignoring for now.");
                     // In a real implementation we would negotiate the new output type here.
                     // For now, we will just break and let the pipeline try to continue.
                     break;
-                } else if e.code() != windows::core::HRESULT(0xC00D6D72u32 as i32) { // MF_E_TRANSFORM_NEED_MORE_INPUT is 0xC00D6D72
+                } else if e.code() != windows::core::HRESULT(0xC00D6D72u32 as i32) {
+                    // MF_E_TRANSFORM_NEED_MORE_INPUT is 0xC00D6D72
                     println!("ProcessOutput unexpected error: {}", e);
                 }
                 break;
@@ -170,12 +186,12 @@ impl HardwareEncoder {
             let mut out_ptr: *mut u8 = std::ptr::null_mut();
             let mut current_len = 0;
             out_buffer.Lock(&mut out_ptr, None, Some(&mut current_len))?;
-            
+
             let mut result = vec![0u8; current_len as usize];
             std::ptr::copy_nonoverlapping(out_ptr, result.as_mut_ptr(), current_len as usize);
-            
+
             out_buffer.Unlock()?;
-            
+
             all_nalus.extend_from_slice(&result);
         }
         Ok(())
