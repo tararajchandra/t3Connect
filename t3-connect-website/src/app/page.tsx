@@ -3,6 +3,12 @@ export default function Home() {
     <main>
       {/* ── HERO ── */}
       <section className="hero">
+        <img
+          src="/logo.png"
+          alt="T3 Solutions"
+          style={{ height: '90px', width: 'auto', marginBottom: '28px', filter: 'drop-shadow(0 0 24px rgba(255,107,0,0.4))' }}
+        />
+
         <div className="hero-badge">
           <span className="hero-badge-dot" />
           100% Peer-to-Peer · Zero Central Server
