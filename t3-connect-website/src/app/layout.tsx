@@ -10,7 +10,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: "T3 Connect | Fast P2P Remote Desktop",
     description: "Ultra-low latency, peer-to-peer remote desktop and screen sharing software.",
-    url: "https://t3connect.in", // Update this with actual domain if different
+    url: "https://t3connect.in",
     siteName: "T3 Connect",
     locale: "en_US",
     type: "website",
@@ -32,21 +32,33 @@ export default function RootLayout({
       <head>
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-        <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+        <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet" />
       </head>
       <body>
-        <nav className="navbar glass-panel" style={{ borderRadius: 0, borderTop: 'none', borderLeft: 'none', borderRight: 'none' }}>
-          <div className="brand" style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-            <img src="/logo.png" alt="t3 Solutions" style={{ height: '40px', width: 'auto' }} />
+        <nav className="navbar">
+          <div className="brand">
+            <img src="/logo.png" alt="T3 Connect" style={{ height: '38px', width: 'auto' }} />
           </div>
           <div className="nav-links">
-            <a href="#features">Features</a>
-            <a href="#promotions">More Products</a>
+            <a href="#features" id="nav-features">Features</a>
+            <a href="#promotions" id="nav-products">Products</a>
+            <a href="/download/t3connect-setup.msi" className="nav-download-btn" id="nav-download">
+              Download
+            </a>
           </div>
         </nav>
+
         {children}
+
         <footer>
-          <p>© {new Date().getFullYear()} T3 Solutions. All rights reserved.</p>
+          <div className="footer-inner">
+            <div className="footer-brand">T3 Connect</div>
+            <p className="footer-copy">© {new Date().getFullYear()} T3 Solutions. All rights reserved.</p>
+            <div className="footer-links">
+              <a href="https://t3sol.in" target="_blank" rel="noopener noreferrer">t3sol.in</a>
+              <a href="https://github.com/tararajchandra/t3Connect" target="_blank" rel="noopener noreferrer">GitHub</a>
+            </div>
+          </div>
         </footer>
       </body>
     </html>

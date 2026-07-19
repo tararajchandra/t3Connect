@@ -1,74 +1,186 @@
 export default function Home() {
   return (
     <main>
-      {/* Hero Section */}
+      {/* ── HERO ── */}
       <section className="hero">
-        <h1 className="hero-title">Lightning Fast P2P Remote Desktop</h1>
-        <p className="hero-subtitle">
-          Experience ultra-low latency screen sharing and seamless remote support for your clients and teams. The ultimate peer-to-peer remote access software.
-        </p>
-        <a href="/download/t3connect-setup.msi" className="download-btn">
-          Download for Windows
-        </a>
-      </section>
+        <div className="hero-badge">
+          <span className="hero-badge-dot" />
+          100% Peer-to-Peer · Zero Central Server
+        </div>
 
-      {/* Features Section */}
-      <section id="features" className="features">
-        <h2 className="section-title">Why choose T3 Connect?</h2>
-        <div className="features-grid">
-          <div className="feature-card glass-panel">
-            <div className="feature-icon">🚀</div>
-            <h3>Ultra-Low Latency</h3>
-            <p>Hardware accelerated H.264 encoding and decoding guarantees a smooth, real-time experience.</p>
+        <h1 className="hero-title">
+          Remote Desktop,{" "}
+          <span className="gradient-saffron">Reimagined</span>{" "}
+          <br />
+          <span className="gradient-cyan">Lightning Fast.</span>
+        </h1>
+
+        <p className="hero-subtitle">
+          Connect to any computer instantly with ultra-low latency. Secure P2P screen sharing
+          and remote support — no subscriptions, no data breaches.
+        </p>
+
+        <div className="hero-buttons">
+          <a href="/download/t3connect-setup.msi" className="download-btn" id="hero-download-btn">
+            <span>⬇ Download for Windows</span>
+          </a>
+          <a href="#features" className="secondary-btn" id="hero-features-btn">
+            See Features →
+          </a>
+        </div>
+
+        <div className="hero-stats">
+          <div className="stat-item">
+            <div className="stat-number">&lt;50ms</div>
+            <div className="stat-label">Latency</div>
           </div>
-          <div className="feature-card glass-panel">
-            <div className="feature-icon">🔒</div>
-            <h3>Secure P2P Connection</h3>
-            <p>Direct peer-to-peer connections ensure your data never passes through a central server.</p>
+          <div className="stat-item">
+            <div className="stat-number">P2P</div>
+            <div className="stat-label">Architecture</div>
           </div>
-          <div className="feature-card glass-panel">
-            <div className="feature-icon">⚡</div>
-            <h3>Lightweight</h3>
-            <p>Our application is highly optimized and consumes minimal CPU and memory resources.</p>
+          <div className="stat-item">
+            <div className="stat-number">E2E</div>
+            <div className="stat-label">Encrypted</div>
+          </div>
+          <div className="stat-item">
+            <div className="stat-number">Free</div>
+            <div className="stat-label">Forever</div>
           </div>
         </div>
       </section>
 
-      {/* Promotions Zone */}
+      <hr className="gradient-divider" />
+
+      {/* ── FEATURES ── */}
+      <section id="features" className="features">
+        <p className="section-eyebrow">Why T3 Connect</p>
+        <h2 className="section-title">Everything you need, nothing you don&apos;t</h2>
+        <p className="section-subtitle">
+          Built from the ground up for speed, security, and simplicity.
+        </p>
+
+        <div className="features-grid">
+          <div className="feature-card glass-panel fc-saffron" id="feature-latency">
+            <div className="feature-icon-wrapper fi-saffron">🚀</div>
+            <h3>Ultra-Low Latency</h3>
+            <p>Hardware-accelerated H.264 encoding and WebRTC transport guarantee a buttery-smooth, real-time remote experience under 50ms.</p>
+          </div>
+
+          <div className="feature-card glass-panel fc-cyan" id="feature-security">
+            <div className="feature-icon-wrapper fi-cyan">🔒</div>
+            <h3>True P2P Security</h3>
+            <p>Direct peer-to-peer connections with end-to-end DTLS/SRTP encryption. Your screen data never touches a third-party server.</p>
+          </div>
+
+          <div className="feature-card glass-panel fc-yellow" id="feature-lightweight">
+            <div className="feature-icon-wrapper fi-yellow">⚡</div>
+            <h3>Blazing Lightweight</h3>
+            <p>Built entirely in Rust and Tauri. Tiny binary, minimal RAM footprint, and near-zero CPU overhead when idle.</p>
+          </div>
+
+          <div className="feature-card glass-panel fc-saffron" id="feature-simple">
+            <div className="feature-icon-wrapper fi-saffron">🎯</div>
+            <h3>Simple 6-Digit PIN</h3>
+            <p>No accounts. No setup. Share a 6-digit session PIN with anyone and connect in seconds — just like it should be.</p>
+          </div>
+
+          <div className="feature-card glass-panel fc-cyan" id="feature-control">
+            <div className="feature-icon-wrapper fi-cyan">🖱️</div>
+            <h3>Full Remote Control</h3>
+            <p>Complete keyboard and mouse passthrough. Control the remote machine as if you were sitting right in front of it.</p>
+          </div>
+
+          <div className="feature-card glass-panel fc-yellow" id="feature-open">
+            <div className="feature-icon-wrapper fi-yellow">🌐</div>
+            <h3>Open Source</h3>
+            <p>Fully open source on GitHub. Inspect every line of code. No telemetry, no analytics, no hidden surprises — ever.</p>
+          </div>
+        </div>
+      </section>
+
+      <hr className="gradient-divider" />
+
+      {/* ── HOW IT WORKS ── */}
+      <section className="how-it-works">
+        <div className="how-it-works-inner">
+          <p className="section-eyebrow">How It Works</p>
+          <h2 className="section-title">Up and running in 3 steps</h2>
+
+          <div className="steps-grid">
+            <div className="step">
+              <div className="step-number">1</div>
+              <h3>Install the App</h3>
+              <p>Download and install T3 Connect on both computers. It takes less than a minute.</p>
+            </div>
+            <div className="step">
+              <div className="step-number">2</div>
+              <h3>Share Your PIN</h3>
+              <p>The host clicks &quot;Share My Screen&quot; and gets a unique 6-digit session PIN.</p>
+            </div>
+            <div className="step">
+              <div className="step-number">3</div>
+              <h3>Connect Instantly</h3>
+              <p>The viewer enters the PIN and gets a live, encrypted P2P stream in seconds.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ── CTA BANNER ── */}
+      <section className="cta-banner">
+        <h2>
+          Ready to go <span className="gradient-saffron">faster</span>?
+        </h2>
+        <p>
+          Download T3 Connect for free and experience the next generation of remote desktop.
+        </p>
+        <a href="/download/t3connect-setup.msi" className="download-btn" id="cta-download-btn">
+          <span>⬇ Download for Windows — Free</span>
+        </a>
+      </section>
+
+      {/* ── PROMOTIONS ── */}
       <section id="promotions" className="promotions">
-        <h2 className="section-title">Explore Our Other Products</h2>
-        <div className="promo-grid">
-          {/* RxDesk */}
-          <div className="promo-card glass-panel">
-            <div>
-              <h3 className="promo-title">RxDesk</h3>
-              <p>Advanced helpdesk and customer support ticketing system to streamline your IT operations.</p>
-            </div>
-            <a href="https://rxdesk.in" target="_blank" rel="noopener noreferrer" className="promo-link">
-              Visit rxdesk.in →
-            </a>
-          </div>
+        <div className="promotions-inner">
+          <p className="section-eyebrow">T3 Solutions Ecosystem</p>
+          <h2 className="section-title">More products you&apos;ll love</h2>
+          <p className="section-subtitle">
+            A full suite of tools built to power your business.
+          </p>
 
-          {/* GstRecon */}
-          <div className="promo-card glass-panel">
-            <div>
-              <h3 className="promo-title">GstRecon</h3>
-              <p>Automated GST reconciliation software for seamless tax compliance and reporting.</p>
+          <div className="promo-grid">
+            <div className="promo-card glass-panel" id="promo-rxdesk">
+              <div>
+                <span className="promo-tag tag-saffron">Helpdesk</span>
+                <h3 className="promo-title">RxDesk</h3>
+                <p>Advanced helpdesk and customer support ticketing system to streamline your IT operations and delight your customers.</p>
+              </div>
+              <a href="https://rxdesk.in" target="_blank" rel="noopener noreferrer" className="promo-link promo-link-saffron" id="promo-rxdesk-link">
+                Visit rxdesk.in →
+              </a>
             </div>
-            <a href="https://gstrecon.t3sol.in" target="_blank" rel="noopener noreferrer" className="promo-link">
-              Visit gstrecon.t3sol.in →
-            </a>
-          </div>
 
-          {/* T3 Solutions */}
-          <div className="promo-card glass-panel">
-            <div>
-              <h3 className="promo-title">Hisabpro ERP</h3>
-              <p>Complete Enterprise Resource Planning solution by T3 Solutions to manage your business efficiently.</p>
+            <div className="promo-card glass-panel" id="promo-gstrecon">
+              <div>
+                <span className="promo-tag tag-cyan">Compliance</span>
+                <h3 className="promo-title">GstRecon</h3>
+                <p>Automated GST reconciliation software for seamless tax compliance and accurate, on-time reporting — zero manual effort.</p>
+              </div>
+              <a href="https://gstrecon.t3sol.in" target="_blank" rel="noopener noreferrer" className="promo-link promo-link-cyan" id="promo-gstrecon-link">
+                Visit gstrecon.t3sol.in →
+              </a>
             </div>
-            <a href="https://t3sol.in" target="_blank" rel="noopener noreferrer" className="promo-link">
-              Visit t3sol.in →
-            </a>
+
+            <div className="promo-card glass-panel" id="promo-hisabpro">
+              <div>
+                <span className="promo-tag tag-yellow">ERP</span>
+                <h3 className="promo-title">Hisabpro ERP</h3>
+                <p>Complete Enterprise Resource Planning solution by T3 Solutions to manage your entire business in one unified platform.</p>
+              </div>
+              <a href="https://t3sol.in" target="_blank" rel="noopener noreferrer" className="promo-link promo-link-yellow" id="promo-hisabpro-link">
+                Visit t3sol.in →
+              </a>
+            </div>
           </div>
         </div>
       </section>
