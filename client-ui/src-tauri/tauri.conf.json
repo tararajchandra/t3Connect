@@ -1,6 +1,6 @@
 {
   "$schema": "https://schema.tauri.app/config/2",
-  "productName": "client-ui",
+  "productName": "t3connect",
   "version": "0.1.0",
   "identifier": "com.krishnendu.client-ui",
   "build": {
