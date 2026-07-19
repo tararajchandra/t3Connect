@@ -90,10 +90,10 @@ export default function Home() {
             <p>Complete keyboard and mouse passthrough. Control the remote machine as if you were sitting right in front of it.</p>
           </div>
 
-          <div className="feature-card glass-panel fc-yellow" id="feature-open">
-            <div className="feature-icon-wrapper fi-yellow">🌐</div>
-            <h3>Open Source</h3>
-            <p>Fully open source on GitHub. Inspect every line of code. No telemetry, no analytics, no hidden surprises — ever.</p>
+          <div className="feature-card glass-panel fc-yellow" id="feature-free">
+            <div className="feature-icon-wrapper fi-yellow">🎁</div>
+            <h3>Always Free</h3>
+            <p>No subscriptions, no trials, no hidden charges. T3 Connect is completely free to use — forever. For individuals and teams alike.</p>
           </div>
         </div>
       </section>
@@ -176,6 +176,10 @@ export default function Home() {
                 <span className="promo-tag tag-yellow">ERP</span>
                 <h3 className="promo-title">Hisabpro ERP</h3>
                 <p>Complete Enterprise Resource Planning solution by T3 Solutions to manage your entire business in one unified platform.</p>
+                <div className="footer-links">
+                  <a href="https://t3sol.in" target="_blank" rel="noopener noreferrer">t3sol.in</a>
+                  <a href="mailto:support@t3sol.in">Contact</a>
+                </div>
               </div>
               <a href="https://t3sol.in" target="_blank" rel="noopener noreferrer" className="promo-link promo-link-yellow" id="promo-hisabpro-link">
                 Visit t3sol.in →

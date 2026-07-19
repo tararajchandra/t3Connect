@@ -56,7 +56,7 @@ export default function RootLayout({
             <p className="footer-copy">© {new Date().getFullYear()} T3 Solutions. All rights reserved.</p>
             <div className="footer-links">
               <a href="https://t3sol.in" target="_blank" rel="noopener noreferrer">t3sol.in</a>
-              <a href="https://github.com/tararajchandra/t3Connect" target="_blank" rel="noopener noreferrer">GitHub</a>
+              <a href="mailto:support@t3sol.in">Contact</a>
             </div>
           </div>
         </footer>
