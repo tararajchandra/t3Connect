@@ -1,8 +1,11 @@
+import ParticleBg from './components/ParticleBg';
+
 export default function Home() {
   return (
     <main>
       {/* ── HERO ── */}
       <section className="hero">
+        <ParticleBg />
         <div style={{
           width: '120px',
           height: '120px',

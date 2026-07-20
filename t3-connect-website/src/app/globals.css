@@ -145,6 +145,12 @@ body::after {
   overflow: hidden;
 }
 
+.hero > *:not(canvas) {
+  position: relative;
+  z-index: 2;
+}
+
+
 .hero-badge {
   display: inline-flex;
   align-items: center;
