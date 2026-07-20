@@ -49,7 +49,7 @@ export default function RootLayout({
           <div className="nav-links">
             <a href="#features" id="nav-features">Features</a>
             <a href="#promotions" id="nav-products">Products</a>
-            <a href="/download/t3connect-setup.msi" className="nav-download-btn" id="nav-download">
+            <a href="https://1drv.ms/u/c/341c25ad9130053e/IQBee-xxrYU6Q5Z3HmPpvHfRASo4IVr80Ws2DTjKoHzbtzc?e=a7ohBn" target="_blank" rel="noopener noreferrer" className="nav-download-btn" id="nav-download" title="To open use this password: t3sol.in">
               Download
             </a>
           </div>

