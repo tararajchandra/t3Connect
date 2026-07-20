@@ -171,46 +171,114 @@ export default function Home() {
           <p className="section-eyebrow">T3 Solutions Ecosystem</p>
           <h2 className="section-title">More products you&apos;ll love</h2>
           <p className="section-subtitle">
-            A full suite of tools built to power your business.
+            T3 Connect is completely <strong style={{ color: '#FF6B00' }}>free</strong> — and so are these powerful tools built to grow your business.
           </p>
 
-          <div className="promo-grid">
-            <div className="promo-card glass-panel" id="promo-rxdesk">
-              <div>
-                <span className="promo-tag tag-saffron">Helpdesk</span>
-                <h3 className="promo-title">RxDesk</h3>
-                <p>Advanced helpdesk and customer support ticketing system to streamline your IT operations and delight your customers.</p>
-              </div>
-              <a href="https://rxdesk.in" target="_blank" rel="noopener noreferrer" className="promo-link promo-link-saffron" id="promo-rxdesk-link">
-                Visit rxdesk.in →
-              </a>
-            </div>
+          <div className="promo-grid-new">
 
-            <div className="promo-card glass-panel" id="promo-gstrecon">
-              <div>
-                <span className="promo-tag tag-cyan">Compliance</span>
-                <h3 className="promo-title">GstRecon</h3>
-                <p>Automated GST reconciliation software for seamless tax compliance and accurate, on-time reporting — zero manual effort.</p>
-              </div>
-              <a href="https://gstrecon.t3sol.in" target="_blank" rel="noopener noreferrer" className="promo-link promo-link-cyan" id="promo-gstrecon-link">
-                Visit gstrecon.t3sol.in →
-              </a>
-            </div>
-
-            <div className="promo-card glass-panel" id="promo-hisabpro">
-              <div>
-                <span className="promo-tag tag-yellow">ERP</span>
-                <h3 className="promo-title">Hisabpro ERP</h3>
-                <p>Complete Enterprise Resource Planning solution by T3 Solutions to manage your entire business in one unified platform.</p>
-                <div className="footer-links">
-                  <a href="https://t3sol.in" target="_blank" rel="noopener noreferrer">t3sol.in</a>
-                  <a href="mailto:support@t3sol.in">Contact</a>
+            {/* ── RxDesk ── */}
+            <div className="promo-card-new glass-panel promo-saffron" id="promo-rxdesk">
+              <div className="promo-card-header">
+                <div className="promo-logo-wrap promo-logo-saffron">
+                  <img src="/rxdesk-logo.png" alt="RxDesk Logo" className="promo-logo-img" />
+                </div>
+                <div>
+                  <span className="promo-tag tag-saffron">Pharmacy Billing</span>
+                  <h3 className="promo-title-new">RxDesk</h3>
                 </div>
               </div>
-              <a href="https://t3sol.in" target="_blank" rel="noopener noreferrer" className="promo-link promo-link-yellow" id="promo-hisabpro-link">
-                Visit t3sol.in →
-              </a>
+              <p className="promo-desc">Advanced pharmacy billing &amp; helpdesk solution. Streamline prescriptions, stock, and customer support — all in one place.</p>
+              <ul className="promo-features">
+                <li>💊 Prescription &amp; Billing Management</li>
+                <li>📦 Stock &amp; Inventory Tracking</li>
+                <li>🎫 Customer Support Ticketing</li>
+                <li>📊 Sales Reports &amp; Analytics</li>
+              </ul>
+              <div className="promo-actions">
+                <a href="https://rxdesk.in" target="_blank" rel="noopener noreferrer" className="promo-btn promo-btn-saffron" id="promo-rxdesk-link">
+                  Visit rxdesk.in →
+                </a>
+                <a
+                  href="https://wa.me/919830450252?text=Hi%2C%20I%20am%20interested%20in%20RxDesk.%20Please%20share%20more%20details."
+                  target="_blank" rel="noopener noreferrer"
+                  className="promo-btn promo-btn-whatsapp" id="promo-rxdesk-whatsapp"
+                >
+                  <span>💬</span> Enquire on WhatsApp
+                </a>
+              </div>
             </div>
+
+            {/* ── GstRecon ── */}
+            <div className="promo-card-new glass-panel promo-cyan" id="promo-gstrecon">
+              <div className="promo-card-header">
+                <div className="promo-logo-wrap promo-logo-cyan">
+                  <span style={{ fontSize: '2.2rem' }}>🧾</span>
+                </div>
+                <div>
+                  <span className="promo-tag tag-cyan">GST Compliance</span>
+                  <h3 className="promo-title-new">GstRecon</h3>
+                </div>
+              </div>
+              <p className="promo-desc">Automated GST reconciliation software for seamless tax compliance and accurate, on-time reporting — zero manual effort.</p>
+              <ul className="promo-features">
+                <li>🔄 Auto GSTR-2A/2B Reconciliation</li>
+                <li>📋 ITC Mismatch Detection</li>
+                <li>📤 Bulk Filing Support</li>
+                <li>⚡ Zero Manual Effort</li>
+              </ul>
+              <div className="promo-actions">
+                <a href="https://gstrecon.t3sol.in" target="_blank" rel="noopener noreferrer" className="promo-btn promo-btn-cyan" id="promo-gstrecon-link">
+                  Visit gstrecon.t3sol.in →
+                </a>
+                <a
+                  href="https://wa.me/919830450252?text=Hi%2C%20I%20am%20interested%20in%20GstRecon.%20Please%20share%20more%20details."
+                  target="_blank" rel="noopener noreferrer"
+                  className="promo-btn promo-btn-whatsapp" id="promo-gstrecon-whatsapp"
+                >
+                  <span>💬</span> Enquire on WhatsApp
+                </a>
+              </div>
+            </div>
+
+            {/* ── Hisabpro ERP ── */}
+            <div className="promo-card-new glass-panel promo-yellow" id="promo-hisabpro">
+              <div className="promo-card-header">
+                <div className="promo-logo-wrap promo-logo-yellow">
+                  <img src="/hisabpro-logo.png" alt="Hisabpro ERP Logo" className="promo-logo-img" />
+                </div>
+                <div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+                    <span className="promo-tag tag-yellow">ERP</span>
+                    <span className="coming-soon-badge">🚀 Coming Soon</span>
+                  </div>
+                  <h3 className="promo-title-new">Hisabpro ERP</h3>
+                </div>
+              </div>
+              <p className="promo-desc">The Ultimate All-in-One Cloud ERP &amp; Accounting Solution. Simplify your business, amplify your growth.</p>
+              <ul className="promo-features">
+                <li>📊 Smart Accounting &amp; Auto Bank Import</li>
+                <li>📦 Inventory &amp; Stock Management</li>
+                <li>🧾 GST Invoicing &amp; Billing</li>
+                <li>👥 HR &amp; Payroll Management</li>
+                <li>📈 Advanced Reporting &amp; CRM</li>
+              </ul>
+              <div className="promo-earlybird">
+                🎉 <strong>EARLYBIRD OFFER:</strong> Get 3-User LAN Version <span style={{ color: '#FFD600' }}>FREE!</span>
+              </div>
+              <div className="promo-actions">
+                <a href="https://hisabproerp.com" target="_blank" rel="noopener noreferrer" className="promo-btn promo-btn-yellow" id="promo-hisabpro-link">
+                  Visit hisabproerp.com →
+                </a>
+                <a
+                  href="https://wa.me/919830450252?text=Hi%2C%20I%20am%20interested%20in%20Hisabpro%20ERP.%20Please%20share%20more%20details."
+                  target="_blank" rel="noopener noreferrer"
+                  className="promo-btn promo-btn-whatsapp" id="promo-hisabpro-whatsapp"
+                >
+                  <span>💬</span> Enquire on WhatsApp
+                </a>
+              </div>
+            </div>
+
           </div>
         </div>
       </section>
